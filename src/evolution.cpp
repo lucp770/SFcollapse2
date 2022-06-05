@@ -158,11 +158,12 @@ void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gri
     }
   }
 
+#if (LAPSE_RESCALING == 1 )
   /* Now rescale alpha */
   evolution::rescaling_of_the_lapse(grid,a.level_nm1,alpha.level_nm1);
+#endif
 
 }
-
 /* Function to step phi, Phi, and Pi forward in time */
 void evolution::time_step_scalarfield_gridfunctions( const int n, const grid::parameters grid,
 						     const realvec phi_n, const realvec Phi_n   , const realvec Pi_n   , const realvec a_n    , const realvec alpha_n  ,
@@ -331,7 +332,7 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
   DECLARE_GRID_PARAMETERS;
 
   /* Set auxiliary variables */
-  const real A         = log(a[j-1]);               // A^{n+1}_{j}
+  const real A         = log(a[j-1]);               // A^{n+1}_{j} + 1???(para convergir.)
   const real avgPhi    = 0.5*( Phi[j] + Phi[j-1] ); // 0.5*( Phi^{n+1}_{j+1} + Phi^{n+1}_{j} )
   const real avgPi     = 0.5*( Pi[j]  + Pi[j-1]  ); // 0.5*(  Pi^{n+1}_{j+1} +  Pi^{n+1}_{j} )
   const real PhiSqr    = SQR(avgPhi);
@@ -381,7 +382,7 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
     const real f  = inv_dx0 * (A_old - A) + tmp0 - half_invr + ans_fluid_term * exp(A_old+A) - PhiPiTerm;//equacao D4 completa
     // (A[j+1]-A[j])/dr + a^2/(2r) - 1/(2r) + 3cw_q*a^2/(2*r^(3+wq)) - PhiPiTerm
 
-    const real df = inv_dx0 + tmp0 +ans_fluid_term * exp(A_old+A);//minha incognita do método não é r ou é? essa eq faz sentindo derivando-se em A
+    const real df = inv_dx0 + tmp0 +ans_fluid_term * exp(A_old+A);//minha incognita do método não é r eq faz sentindo derivando-se em A
     //pouco importa R, não é objetivo do metodo encontra-lo, mas sim Aj+1, essa á a incognita.
 
     /* Update A_new */
@@ -449,3 +450,4 @@ void evolution::rescaling_of_the_lapse( grid::parameters grid, const realvec a, 
   LOOP(0,Nx0Total) alpha[j] *= kappa;
 
 }
+// find the minimum value of kappa, and multiply all alphas with it.

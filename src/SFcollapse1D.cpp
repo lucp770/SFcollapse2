@@ -92,13 +92,13 @@ int main( int argc, char *argv[] ) {
   // return 0;
 
   /* Print information to the user */
-  //phi.output_to_file(grid,"scalarfield",-1,0);
+  phi.output_to_file(grid,"scalarfield",-1,0);
   //Phi.output_to_file(grid,"Phi",-1,0);
   //Pi.output_to_file(grid,"Pi",-1,0);
   //a.output_to_file(grid,"a",-1,0);
   //alpha.output_to_file(grid,"alpha",-1,0);
-  utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
-  // utilities::output_energy_density_to_file( grid, Phi.level_nm1, Pi.level_nm1, a.level_nm1, 0 );
+  //utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
+  //utilities::output_energy_density_to_file( grid, Phi.level_nm1, Pi.level_nm1, a.level_nm1, 0 );
 
   utilities::output_gridfunctions_central_values( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
  // utilities::output_comparison( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
@@ -142,8 +142,10 @@ int main( int argc, char *argv[] ) {
     alpha.level_n[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_n, alpha.level_n );
   }
   /* Step 3.d: Now rescale alpha */
-  evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
-  
+  #if (LAPSE_RESCALING == 1 )
+    evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
+  #endif
+
   /* .-------------------------.
    * | Step 4: Update the time |
    * .-------------------------.
@@ -186,8 +188,11 @@ int main( int argc, char *argv[] ) {
     /* Step 3.b: Compute alpha */
     alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
   }
+
+#if (LAPSE_RESCALING == 1 )
   /* Step 3.d: Now rescale alpha */
   evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
+#endif
 
   /* .-------------------------.
    * | Step 4: Update the time |
@@ -196,12 +201,12 @@ int main( int argc, char *argv[] ) {
   grid.t += 0.5 * grid.dt;
 
   /* Print information to the user */
-  //phi.output_to_file(grid,"scalarfield",1,1);
+  phi.output_to_file(grid,"scalarfield",1,1);
   //Phi.output_to_file(grid,"Phi",1,1);
   //Pi.output_to_file(grid,"Pi",1,1);
   //a.output_to_file(grid,"a",1,1);
   // alpha.output_to_file(grid,"alpha",1,1);
-  utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
+  //utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
   // utilities::output_energy_density_to_file( grid, Phi.level_n, Pi.level_n, a.level_n, 1 );
 
   utilities::output_gridfunctions_central_values( 1, grid, phi.level_n, Phi.level_n, Pi.level_n, a.level_n, alpha.level_n );
@@ -268,10 +273,12 @@ int main( int argc, char *argv[] ) {
       /* Step 3.b: Compute alpha */
       alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
     }
+
+  #if (LAPSE_RESCALING == 1 )
     /* Step 3.d: Now rescale alpha */
     evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
-
-    /* .-------------------------.
+  #endif
+        /* .-------------------------.
      * | Step 4: Update the time |
      * .-------------------------.
      */
@@ -301,7 +308,10 @@ int main( int argc, char *argv[] ) {
       max_central_density = central_density;
     }
 
-    /* Check whether or not the lapse function has collapsed */
+    // /* Check whether or not the lapse function has collapsed */
+
+  #if (LAPSE_RESCALING == 1 )
+
     if( utilities::check_for_collapse_of_the_lapse( grid, alpha ) ) {
       cout << "\n(SFcollapse1D INFO) The lapse function has collapsed!\n";
       cout <<   "(SFcollapse1D INFO) Iteration = " << n << " | t = " << setprecision(4) << grid.t << endl;
@@ -309,16 +319,18 @@ int main( int argc, char *argv[] ) {
       lapse_collapsed = true;
       break;
     }
+  #endif
+
 
     /* Print information to the user */
     if( n%OUTPUT_CHECKPOINT == 0 ) {//ou seja se output_checkpoint == multiplo de n, OUTPUT_CHECKPOINT é um macro que vale 100
-      //phi.output_to_file(grid,"scalarfield",1,n);// n é a iteração
+      phi.output_to_file(grid,"scalarfield",1,n);// n é a iteração
       //Phi.output_to_file(grid,"Phi",1,n);
       //Pi.output_to_file(grid,"Pi",1,n);
       //a.output_to_file(grid,"a",1,n);
       // alpha.output_to_file(grid,"alpha",1,n);
        //utilities::compute_and_output_mass_aspect_function(1,n,grid,a);
-    // utilities::output_energy_density_to_file( grid, Phi.level_np1, Pi.level_np1, a.level_np1, n );
+    //utilities::output_energy_density_to_file( grid, Phi.level_np1, Pi.level_np1, a.level_np1, n );
     }
 
     // Output central values
@@ -351,20 +363,25 @@ int main( int argc, char *argv[] ) {
   // Gaussian shell v2
   // const real eta_weak   = 1.591203885327e-2;
   // const real eta_strong = 1.591203885328e-2;
+
+
   // Tanh shell
-  // const real eta_weak   = 2.914370451806e-1;
-  // const real eta_strong = 2.914370451807e-1;
+  const real eta_weak   = 0.3364257813;
+  const real eta_strong = 0.3364257875;
+
+
+  
   // // Set eta_{*}
-  // const real eta_c      = 0.5*( eta_weak + eta_strong );
-  // ofstream out_central_density;
-  // out_central_density.open("max_central_density_values_tanh.dat",ios_base::app);
-  // out_central_density << scientific << setprecision(15)
-  // 		      << grid.phi0                << " "
-  // 		      << max_central_density      << " "
-  // 		      << eta_c - grid.phi0        << " "
-  // 		      << log(eta_c - grid.phi0)   << " "
-  // 		      << log(max_central_density) << endl;
-  // out_central_density.close();
+  const real eta_c      = 0.5*( eta_weak + eta_strong );
+  ofstream out_central_density;
+  out_central_density.open("max_central_density_values_tanh.dat",ios_base::app);
+  out_central_density << scientific << setprecision(15)
+  		      << grid.phi0                << " "
+  		      << max_central_density      << " "
+  		      << eta_c - grid.phi0        << " "
+  		      << log(eta_c - grid.phi0)   << " "
+  		      << log(max_central_density) << endl;
+  out_central_density.close();
 
   if( lapse_collapsed ) {
     cout << "(SFcollapse1D INFO) Run result: Gravitational collapse! Strong field regime.\n";
@@ -381,7 +398,3 @@ int main( int argc, char *argv[] ) {
   return 0;
 
 }
-
-/* uma ideia interessante é a seguinte ao invés de se ter um if ou else para analisar se a função lapso colapsou, posso ter 3 condições
-
-*/

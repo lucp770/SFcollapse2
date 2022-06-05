@@ -37,18 +37,21 @@ typedef std::vector< std::vector<double> > realmat;
 #define SPHERICAL      (0)
 #define SINH_SPHERICAL (1)
 #define COORD_SYSTEM   SINH_SPHERICAL
+#define LAPSE_RESCALING (0)//when active the lapse function is going to be rescaled and the lapso function analised in the origin
+
 
 /* set the anisotropic fluid parameter */
-#define w_q (-1)
+#define w_q (-0.3333333)
 
 
 /* define c_max that garanties the exsitence of BH horizon*/
-#define c_max (0.2751)
+#define c_max (0.1292)
 
 /* set the cosmological constant ( 3*c = lambda)*/
-#define C (0*c_max)//recomendado 0.5*c_max
-#define c_final (-0.01/3)//(C/c_max)
-
+#define C (0.3*c_max)//recomendado 0.5*c_max
+// #define c_final (C/c_max)
+//set the schwarzschild geometry
+#define c_final (0)
 
 /* define the term 2+3*w_q that apears in both evolution equations */
 #define anisotropic_exponent (2 + 3 * w_q)
@@ -61,7 +64,7 @@ typedef std::vector< std::vector<double> > realmat;
 #define GRID_STRUCTURE VERT_CENTERED
 
 /* Set CFL factor */
-#define CFL_FACTOR (0.2)
+#define CFL_FACTOR (0.5)
 // CFL = 0.8 ou 0.9
 
 
@@ -103,10 +106,10 @@ typedef std::vector< std::vector<double> > realmat;
 
 /* Newton's method parameters */
 #define NEWTON_TOL      (1e-8)
-#define NEWTON_MAX_ITER (100)
+#define NEWTON_MAX_ITER (600)
 
 /* Lapse collapse criterion */
-#define LAPSE_COLLAPSE_CRITERION (1e-3)
+#define LAPSE_COLLAPSE_CRITERION (1e-4)
 
 /* Regridding parameters */
 #define REGRID_RADIAL_POINTS       (1)
@@ -118,7 +121,7 @@ typedef std::vector< std::vector<double> > realmat;
 #define REGRID_INTERP_STENCIL_SIZE (3)
 
 /* Checkpoints */
-#define OUTPUT_CHECKPOINT                (100)
+#define OUTPUT_CHECKPOINT                (1000)
 #define CENTRAL_VALUES_OUTPUT_CHECKPOINT (1)
 #define REGRID_CHECKER_CHECKPOINT        (100)
 #define LAPSE_COLLAPSE_CHECKPOINT        (50)

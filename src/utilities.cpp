@@ -253,9 +253,12 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
     /* Step 3.b: Compute alpha */
     alpha.level_n[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_n, alpha.level_n );
   }
+
+  #if (LAPSE_RESCALING == 1 )
   /* Step 3.d: Now rescale alpha */
   evolution::rescaling_of_the_lapse(grid,a.level_n,alpha.level_n);
-  
+  #endif
+
   /* .-------------------------.
    * | Step 4: Update the time |
    * .-------------------------.
@@ -298,9 +301,12 @@ void utilities::regrid( grid::parameters &grid, gridfunction &phi, gridfunction 
     /* Step 3.b: Compute alpha */
     alpha.level_np1[j] = evolution::pointwise_solution_of_the_polar_slicing_condition( j, grid, a.level_np1, alpha.level_np1 );
   }
+
+  #if (LAPSE_RESCALING == 1 )
   /* Step 3.d: Now rescale alpha */
   evolution::rescaling_of_the_lapse(grid,a.level_np1,alpha.level_np1);
-
+  #endif
+  
   /* .-------------------------.
    * | Step 4: Update the time |
    * .-------------------------.
@@ -531,20 +537,17 @@ void utilities::parameter_information( grid::parameters grid ) {
     cout << fixed      << setprecision(2)  << "t_{final}  = " << t_final         << endl;
     cout << scientific << setprecision(3)  << "dt         = " << dt              << endl;
     cout << fixed      << setprecision(2)  << "CFL factor = " << CFL_FACTOR      << endl;
-    cout << fixed      << setprecision(3)  << "W_q = " << w_q      << endl;
+    cout << fixed      << setprecision(7)  << "w_q = " << w_q      << endl;
     cout << fixed      << setprecision(3)  << "C_MAX = " << c_max     << endl;
-    cout << fixed      << setprecision(3)  << "C/C_MAX = " << c_final     << endl;
+    cout << fixed      << setprecision(7)  << "C/C_MAX = " << c_final     << endl;
 
     cout << "\n";
 
     if( iter == 1 ) cout.rdbuf(coutbuf); // Reset to standard output again
 
     iter++;
-
   }
-
 }
-
 /* Output the mass-aspect function */
 void utilities::compute_and_output_mass_aspect_function( const int which_level, const int n, const grid::parameters grid, const gridfunction a ) {
 
@@ -675,9 +678,17 @@ void utilities::NaN_checker( const int n, grid::parameters grid, gridfunction ph
 	   << " | time = " << t
 	   << " | j = "    << j
 	   << endl;
+     cerr << "phi : " << isnan( phi.level_np1[j] ) << endl;
+     cerr << "Phi : " << isnan( Phi.level_np1[j] ) << endl;
+     cerr << "Pi : " << isnan( Pi.level_np1[j] ) << endl;
+     cerr << "a : " << isnan( a.level_np1[j] ) << endl;
+     cerr << "alpha : " << isnan( alpha.level_np1[j] ) << endl;
       utilities::SFcollapse1D_error( NAN_ERROR );
     }
   }
+
+
+
 }
 
 /* Various errors that may occur during execution */
@@ -746,15 +757,4 @@ void utilities::SFcollapse1D_error( const int error ) {
   }
 
 }
-/*
-void utilities::execution_checkpoint(){
 
-  ofstream output_info;
-  // const string filename = "out_central_values"+to_string(phi0)+".dat";
-  const string filename = "output.dat";
-    output_info.open(filename,ios_base::app);
-    output_info << 
-  out_central.close();
-
-  
-}*/

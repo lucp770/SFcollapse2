@@ -48,9 +48,7 @@ void gridfunction::initialize_gridfunction( const int N ) {
   level_np1.resize(N,0.0);
   level_n.resize(  N,0.0);
   level_nm1.resize(N,0.0);
-
 }
-
 void gridfunction::shift_timelevels( const int which_levels ) {
 
   if( which_levels == 2 ) {
