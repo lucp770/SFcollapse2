@@ -31,18 +31,12 @@
 #include "gridfunction.hpp"
 #include "evolution.hpp"
 
-
 using namespace std;
 
 int main( int argc, char *argv[] ) {
 
   /* Print logo to the user */
 #include "logo.hpp"
-
-//clean preexisting executions:
-
-
-/*
 
   /* Check correct usage */
 #if( COORD_SYSTEM == SPHERICAL )
@@ -93,11 +87,11 @@ int main( int argc, char *argv[] ) {
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",-1,0);
-  //Phi.output_to_file(grid,"Phi",-1,0);
-  //Pi.output_to_file(grid,"Pi",-1,0);
-  //a.output_to_file(grid,"a",-1,0);
-  //alpha.output_to_file(grid,"alpha",-1,0);
-  //utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
+  Phi.output_to_file(grid,"Phi",-1,0);
+  Pi.output_to_file(grid,"Pi",-1,0);
+  a.output_to_file(grid,"a",-1,0);
+  alpha.output_to_file(grid,"alpha",-1,0);
+  utilities::compute_and_output_mass_aspect_function(-1,0,grid,a);
   //utilities::output_energy_density_to_file( grid, Phi.level_nm1, Pi.level_nm1, a.level_nm1, 0 );
 
   utilities::output_gridfunctions_central_values( 0, grid, phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1 );
@@ -122,6 +116,7 @@ int main( int argc, char *argv[] ) {
 						  phi.level_nm1, Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1, 
 						  Phi.level_nm1, Pi.level_nm1, a.level_nm1, alpha.level_nm1,
 						  Phi.level_n  , Pi.level_n  , phi.level_n );
+
   /* Step 2.d: Apply boundary conditions */
   evolution::apply_outgoing_radiation_bdry_cond( 0, grid,
 						 phi.level_nm1, Pi.level_nm1,
@@ -202,11 +197,11 @@ int main( int argc, char *argv[] ) {
 
   /* Print information to the user */
   phi.output_to_file(grid,"scalarfield",1,1);
-  //Phi.output_to_file(grid,"Phi",1,1);
-  //Pi.output_to_file(grid,"Pi",1,1);
-  //a.output_to_file(grid,"a",1,1);
-  // alpha.output_to_file(grid,"alpha",1,1);
-  //utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
+  Phi.output_to_file(grid,"Phi",1,1);
+  Pi.output_to_file(grid,"Pi",1,1);
+  a.output_to_file(grid,"a",1,1);
+  alpha.output_to_file(grid,"alpha",1,1);
+  utilities::compute_and_output_mass_aspect_function(1,1,grid,a);
   // utilities::output_energy_density_to_file( grid, Phi.level_n, Pi.level_n, a.level_n, 1 );
 
   utilities::output_gridfunctions_central_values( 1, grid, phi.level_n, Phi.level_n, Pi.level_n, a.level_n, alpha.level_n );
@@ -325,16 +320,16 @@ int main( int argc, char *argv[] ) {
     /* Print information to the user */
     if( n%OUTPUT_CHECKPOINT == 0 ) {//ou seja se output_checkpoint == multiplo de n, OUTPUT_CHECKPOINT é um macro que vale 100
       phi.output_to_file(grid,"scalarfield",1,n);// n é a iteração
-      //Phi.output_to_file(grid,"Phi",1,n);
-      //Pi.output_to_file(grid,"Pi",1,n);
-      //a.output_to_file(grid,"a",1,n);
-      // alpha.output_to_file(grid,"alpha",1,n);
-       //utilities::compute_and_output_mass_aspect_function(1,n,grid,a);
+      Phi.output_to_file(grid,"Phi",1,n);
+      Pi.output_to_file(grid,"Pi",1,n);
+      a.output_to_file(grid,"a",1,n);
+      alpha.output_to_file(grid,"alpha",1,n);
+       utilities::compute_and_output_mass_aspect_function(1,n,grid,a);
     //utilities::output_energy_density_to_file( grid, Phi.level_np1, Pi.level_np1, a.level_np1, n );
     }
 
     // Output central values
-     if( n%1000 == 0 ) {
+     if( n%50 == 0 ) {
       utilities::output_gridfunctions_central_values( n, grid, phi.level_np1, Phi.level_np1, Pi.level_np1, a.level_np1, alpha.level_np1 );
        }
      //if(n%50 == 0){

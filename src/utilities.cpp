@@ -686,9 +686,6 @@ void utilities::NaN_checker( const int n, grid::parameters grid, gridfunction ph
       utilities::SFcollapse1D_error( NAN_ERROR );
     }
   }
-
-
-
 }
 
 /* Various errors that may occur during execution */

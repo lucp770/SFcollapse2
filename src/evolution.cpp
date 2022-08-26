@@ -38,7 +38,7 @@ void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gri
   DECLARE_GRID_PARAMETERS;
 
   LOOP(0,Nx0Total) {
-//aqui provavelmente entraria o código. mas ele precisa avaliar mais do que somente o grid.
+
     //initial_condition
     
 #if( INITIAL_CONDITION == GAUSSIAN_SHELL )
@@ -352,8 +352,6 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
   const real PhiPiTerm = 2.0 * M_PI * (SQR(sinhA) * inv_sinhW) * sinh(midx0*inv_sinhW) * cosh(midx0*inv_sinhW) / SQR(sinh_inv_W) * ( PhiSqr + PiSqr );
   const real half_invr = 0.5/( sinhW * tanh(midx0*inv_sinhW) );
   const real r_sinh = A_over_sinh_inv_W * sinh(inv_sinhW * midx0);
-
-  //const real cosmological_term = 1 - COSMOLOGICAL_CONSTANT *  SQR(r_sinh);
   const real ans_fluid_term = (3 * c_final * w_q)/(2* pow(r_sinh, anisotropic_exponent));
 #else
   utilities::SFcollapse1D_error(COORD_SYSTEM_ERROR);
@@ -363,43 +361,109 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
   real A_old = log(a[j-1]);
 
   /* Set variable for output */
-  real A_new = A_old;
+  // real A_new = A_old;
 
   /* Set a counter */
   real iter = 0;
-  
-  /* Perform Newton's method */
-  do{
 
-    /* Update A_old */
-    A_old = A_new;
+//   #if (TESTANDO ==0)
+//   /* Perform Newton's method */
+
+//   do{
+//     /* Update A_old */
+//     A_old = A_new;
     
-    /* Compute f and df */
-    const real tmp0 = half_invr * exp(A_old+A);
-    /* é importante notar que o termo (A_old+ A) veio de um termo 0.5(A_old+A) que cancela com o quadrado do expoente*/
-    //lembre-se a^2 = exp(A_old+A)
+//     /* Compute f and df */
+//     const real tmp0 = half_invr * exp(A_old+A);
+//     /* é importante notar que o termo (A_old+ A) veio de um termo 0.5(A_old+A) que cancela com o quadrado do expoente*/
+//     //lembre-se a^2 = exp(A_old+A)
 
-    const real f  = inv_dx0 * (A_old - A) + tmp0 - half_invr + ans_fluid_term * exp(A_old+A) - PhiPiTerm;//equacao D4 completa
-    // (A[j+1]-A[j])/dr + a^2/(2r) - 1/(2r) + 3cw_q*a^2/(2*r^(3+wq)) - PhiPiTerm
+//     const real f  = inv_dx0 * (A_old - A) + tmp0 - half_invr + ans_fluid_term * exp(A_old+A) - PhiPiTerm;//equacao D4 completa
+//     // (A[j+1]-A[j])/dr + a^2/(2r) - 1/(2r) + 3*c*w_q*a^2/(2*r^(3+wq)) - PhiPiTerm
 
-    const real df = inv_dx0 + tmp0 +ans_fluid_term * exp(A_old+A);//minha incognita do método não é r eq faz sentindo derivando-se em A
-    //pouco importa R, não é objetivo do metodo encontra-lo, mas sim Aj+1, essa á a incognita.
+//     const real df = inv_dx0 + tmp0 +ans_fluid_term * exp(A_old+A);//minha incognita do método não é r eq faz sentindo derivando-se em A
+//     //pouco importa R, não é objetivo do metodo encontra-lo, mas sim Aj+1, essa á a incognita.
 
-    /* Update A_new */
-    A_new = A_old - f/df;
+//     /* Update A_new */
+//     A_new = A_old - f/df;
 
-    /* Increment the iterator */
-    iter++;
+//     /* Increment the iterator */
+//     iter++;
 
-  } while( ( fabs(A_new - A_old) > NEWTON_TOL ) && ( iter <= NEWTON_MAX_ITER ) );
 
-  /* Check for convergence */
-  if( iter > NEWTON_MAX_ITER ) cerr << "\n(Newton's method WARNING) Newton's method did not converge to a root! j = " << j << " | iter = " << iter << endl;
+//   } while( ( fabs(A_new - A_old) > NEWTON_TOL ) && ( iter <= NEWTON_MAX_ITER ) );
 
-  /* Return the value of a */
-  return( exp(A_new) );
+// #endif
+
+//__________________________//________________________________//______________________________________//
+
+  // if(iter >NEWTON_MAX_ITER ){
+
+    //set the interval for the bisection method
+
+  // cout<< "Newton method did not converge ..... attempting a bisection algorithm ......"<< endl;
+  //create auxiliar variables to the application of the bisection method.
   
-}
+  real inferior = log(0.00000001);
+  real superior = log(100);
+  real c =0;
+  real f_c=0;
+ const real tmp0 = half_invr * exp(A_old+A);
+  do{
+  //calculate f(inferior)
+  real f_inf = inv_dx0 * (inferior - A) + tmp0 - half_invr + ans_fluid_term * exp(inferior+A) - PhiPiTerm;
+  // cout<< "valor de f_inf: "<< to_string(f_inf)<<endl;
+
+  //calculate f(superior)
+  real f_sup = inv_dx0 * (superior - A) + tmp0 - half_invr + ans_fluid_term * exp(superior+A) - PhiPiTerm;
+  // cout<< "valor de f_sup: "<< to_string(f_sup)<<endl;
+
+  //Check if the conditions for bisection are satisfied: (f_inf < 0 && f_sup > 0 or f_inf>0 && f_sup < 0)
+      if ((f_sup > 0 && f_inf< 0 ) || (f_sup > 0 && f_inf< 0)) {
+
+          // cout<< "Condition for the application of bisection satisfied " << endl;
+
+          c = (inferior + superior)/2;
+          f_c = inv_dx0 * (c - A) + tmp0 - half_invr + ans_fluid_term * exp(c+A) - PhiPiTerm;
+
+          //calculate a new value for the root....
+          if(f_c==0){
+            // cout<<"f_c = 0 ... metodo encerrado" << endl;
+            return exp(c);
+
+          }else if(f_c < 0){
+            // cout<<"f_c < 0 .....metodo deve continuar."<< endl;
+            inferior = c;
+          }
+          else{
+            // cout<<" f_c > 0 ....metodo deve continuar" << endl;
+            superior = c;
+          }
+
+    }//if condition not satisfied...
+  
+    else{
+      cout<< "impossible apply the bisection method ..... not able to find a solution for the equation." << endl;
+      exit(1);
+    }
+
+  /* Increment the iterator */
+  iter++;
+
+  } while(( fabs(superior - inferior) > NEWTON_TOL ) && ( iter <= NEWTON_MAX_ITER ) );
+
+  if (iter > NEWTON_MAX_ITER){
+    cerr<< "bisection method did not converge ..... review the root interval."<< endl;
+    exit(1);
+  }
+
+  cout << "root found"<< to_string(c) << endl;
+  return exp(c);
+
+// }; //end of bissection
+//   return( exp(A_new) );
+  
+ }
 
 /* Function to solve the polar slicing condition */
 real evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, grid::parameters grid, const realvec a, const realvec alpha ) {
@@ -428,7 +492,6 @@ real evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, 
   const real d = (1.0 - 0.25 * SQR(b))/( 2.0 * midway_r ) - inv_dx0 * c / b - 0.25 * ans_fluid_term * SQR(b);//representa oq esta em chaves na equação D5
   /* Step 3.c: Compute alpha */
   return( alpha[j-1]*( 1.0 - d*dx0 )/( 1.0 + d*dx0 ) );
-  
 }
 
 /* Function to perform the rescaling of the lapse function */
