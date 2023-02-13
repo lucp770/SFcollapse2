@@ -58,7 +58,7 @@ f(r) = 1 - 2M/r - (COSMOLOGICAL_CONSTANT)*r^2;
 */
 
 //it is recomended to write real numbers not integers
-#define C (0)
+#define C (-0.0000001)
 #define W (1.0/3.0)
 #define COSMOLOGICAL_CONSTANT (0.0)
 

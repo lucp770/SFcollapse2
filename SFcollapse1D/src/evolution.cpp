@@ -29,6 +29,7 @@
 #include "evolution.hpp"
 #include "utilities.hpp"
 
+
 using namespace std;
 
 
@@ -342,9 +343,9 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
   const real PhiSqr    = SQR(avgPhi);
   const real PiSqr     = SQR(avgPi);
   const real midx0     = 0.5 * ( x[0][j] + x[0][j-1] );
-  //x is being used globally, but x makes sense in spherical coordinates???
 
-#if( COORD_SYSTEM == SPHERICAL )
+
+  #if( COORD_SYSTEM == SPHERICAL )
     const real PhiPiTerm = 2.0 * M_PI * midx0 * ( PhiSqr + PiSqr );//lado direito da equação D.4 sem constante cosmologica
     //midx0 é o ponto intermediario
     const real half_invr = 0.5 / midx0;//1/(2*midx0)
@@ -359,77 +360,60 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
       const real cosmological_term = 1;
     #endif
 
-#elif( COORD_SYSTEM == SINH_SPHERICAL )
-  const real PhiPiTerm = 2.0 * M_PI * (SQR(sinhA) * inv_sinhW) * sinh(midx0*inv_sinhW) * cosh(midx0*inv_sinhW) / SQR(sinh_inv_W) * ( PhiSqr + PiSqr );
-  const real half_invr = 0.5/( sinhW * tanh(midx0*inv_sinhW) );
-  const real r_sinh = A_over_sinh_inv_W * sinh(inv_sinhW * midx0);
+  #elif( COORD_SYSTEM == SINH_SPHERICAL )
+    const real PhiPiTerm = 2.0 * M_PI * (SQR(sinhA) * inv_sinhW) * sinh(midx0*inv_sinhW) * cosh(midx0*inv_sinhW) / SQR(sinh_inv_W) * ( PhiSqr + PiSqr );
+    const real half_invr = 0.5/( sinhW * tanh(midx0*inv_sinhW) );
+    const real r_sinh = A_over_sinh_inv_W * sinh(inv_sinhW * midx0);
 
 
     #if (SPACETIME_TYPE == ANISOTROPIC_FLUID)
-      const real ans_fluid_term = (3 * c_final * w_q)/(2* pow(r_sinh, anisotropic_exponent));
-      const real cosmological_term = 1;
+    const real ans_fluid_term = (3 * c_final * w_q)/(2* pow(r_sinh, anisotropic_exponent));
+    const real cosmological_term = 1;
+
 
     #endif
 
     #if(SPACETIME_TYPE==COSMOLOGICAL_CONSTANT_SPACETIME)
-       const real cosmological_term = 1 - cosmological_constant *  SQR(r_sinh);
-       const real ans_fluid_term = 0.0;
+      const real cosmological_term = 1 - cosmological_constant *  SQR(r_sinh);
+      const real ans_fluid_term = 0.0;
+
     #endif
 
-#else
-  utilities::SFcollapse1D_error(COORD_SYSTEM_ERROR);
-#endif
+  #else
+    utilities::SFcollapse1D_error(COORD_SYSTEM_ERROR);
+  #endif
 
   /* Set Newton's guess */
   real A_old = log(a[j-1]);
 
-  /* Set variable for output */
-  real A_new = A_old;
-
-  /* Set a counter */
-  real iter = 0;
-
-
   // calculate auxiliar variables.
   const real tmp0 = half_invr * exp(A_old+A)*cosmological_term;
 
-   
-   real inferior_limit = utilities::random_search_negative_values(inv_dx0, A, tmp0, half_invr,PhiPiTerm, ans_fluid_term);
-   // cout << "inferior_limit: " << to_string(inferior_limit) <<endl;
+  real inferior_limit = utilities::random_search_negative_values(inv_dx0, A, tmp0, half_invr,PhiPiTerm, ans_fluid_term);
 
-   real superior_limit = utilities::random_search_positive_values(inv_dx0, A, tmp0, half_invr,PhiPiTerm, ans_fluid_term);
-   // cout << "superior limit:" <<to_string(superior_limit) <<endl;
-
+  real superior_limit = utilities::random_search_positive_values(inv_dx0, A, tmp0, half_invr,PhiPiTerm, ans_fluid_term);
+  
   real f_superior = inv_dx0 * (superior_limit - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(superior_limit+A);
-  // cout << "f_superior: " <<to_string(f_superior) << endl;
 
   real f_inferior = inv_dx0 * (inferior_limit - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(inferior_limit+A);
-  // cout << "f_inferior: " <<to_string(f_inferior) << endl;
-
 
   real f_c = 0;//set ans_fluid_term to zero in the caso of cosmological_spacetime
   real c = 0;
-  int iteration = 0;  
+  int iteration = 0;
 
   do{
     //start the iterator
     
     if (f_superior > 0 && f_inferior <0){
-      // cout<< "condicao1" << endl;
 
       c = (superior_limit + inferior_limit)/2;
-      // cout << "c: " << to_string(c)<< endl;
 
       f_c = inv_dx0 * (c - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(c+A);
-      // cout<< "f_c" << to_string(f_c) << endl;
-      // cout<< "f_superior: " << to_string(f_superior) << endl;
-      // cout<< "f_inferior" << to_string(f_inferior) << endl;
 
       if(f_c > 0){
         superior_limit = c;
         f_superior = f_c;
-        // cout<<"aplicado f_c>0"<< endl;;
-
+    
       }
       else if (f_c <0){
         inferior_limit = c;
@@ -439,6 +423,7 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
       else {
         //if c is in fact the root
         return exp(c);
+
       }
     }
 
@@ -468,32 +453,29 @@ real evolution::pointwise_solution_of_the_Hamiltonian_constraint( const int j, g
         //if c is in fact the root
         cout << "c is the root" << to_string(c) << endl;
         return exp(c);
+
       }
 
     }
-
     else{
       cout << "condition not satisfied, please redefine the interval" << endl;
     }
 
     iteration++;
-    // cout<<iteration << endl;
-    //clear the cout consoel???
-    // system("clear");
 
-    }while((abs(f_superior - f_inferior) > NEWTON_TOL) && (iteration <= NEWTON_MAX_ITER ));
-// while((abs(f_superior - f_inferior) > NEWTON_TOL) && (iteration <= NEWTON_MAX_ITER ) && roots_found < expected_number_roots);
-    if(iteration > NEWTON_MAX_ITER ){
-      cout << "Bissection method failed to converge ..... " << endl;
-      cout << to_string(abs(f_superior - f_inferior)) <<endl;
-      exit(1);
-
-    }
-
-    real root = c;
-    return exp(root);
+  }while((abs(f_superior - f_inferior) > NEWTON_TOL) && (iteration <= NEWTON_MAX_ITER ));
+          
+  if(iteration > NEWTON_MAX_ITER ){
+    cout << "Bissection method failed to converge ..... " << endl;
+    cout << to_string(abs(f_superior - f_inferior)) <<endl;
+    exit(1);
 
   }
+
+  real root = exp(c);
+
+  return root;
+}
 
 /* Function to solve the polar slicing condition */
 real evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, grid::parameters grid, const realvec a, const realvec alpha ) {
@@ -535,8 +517,7 @@ real evolution::pointwise_solution_of_the_polar_slicing_condition( const int j, 
 #endif
 
 //*******************************************************************************************//
-  
-  //é possivel colocar as duas condições em uma unica linha com as modificações feitas.
+
   #if (SPACETIME_TYPE == ANISOTROPIC_FLUID)
     const real d = (1.0 - 0.25 * SQR(b))/( 2.0 * midway_r ) - inv_dx0 * c / b - 0.25 * ans_fluid_term * SQR(b);//representa oq esta em chaves na equação D5
   
@@ -561,10 +542,10 @@ void evolution::rescaling_of_the_lapse( grid::parameters grid, const realvec a, 
     real kappa_new = a[j]/alpha[j];
     if( kappa_new < kappa )
       kappa = kappa_new;
+  
   }
 
   /* Rescale the lapse */
   LOOP(0,Nx0Total) alpha[j] *= kappa;
 
 }
-// find the minimum value of kappa, and multiply all alphas with it.

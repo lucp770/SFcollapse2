@@ -28,20 +28,13 @@
 #include "gridfunction.hpp"
 #include "evolution.hpp"
 #include "utilities.hpp"
+#include <algorithm>    // std::sort
+#include <vector>       // std::vector
+
+
+// #include <bits/stdc++.h>
 
 using namespace std;
-
-//set variables to control the anisotropic fluid term in the kiselev metric
-// #if (SPACETIME_TYPE == COSMOLOGICAL_CONSTANT_SPACETIME)
-// real w_q = -1;
-// real cosmological_constant = COSMOLOGICAL_CONSTANT;
-// #endif
-
-// #if (SPACETIME_TYPE == ANISOTROPIC_FLUID)
-// real w_q = 1.0 / 3.0;
-// real c_final = -0.000000000001;
-// #endif
-
 
 /* Function to set the initial condition for all gridfunctions: phi, Phi, Pi, a, and alpha */
 void evolution::initial_condition( grid::parameters grid, gridfunction &phi, gridfunction &Phi, gridfunction &Pi, gridfunction &a, gridfunction &alpha ) {

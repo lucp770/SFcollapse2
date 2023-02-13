@@ -807,8 +807,8 @@ real utilities::random_search_positive_values(real inv_dx0, real A, real tmp0, r
 
   for(int i=0; i < 100000; i++){
 
-    real number = rand() % 10000;
-    real number2 = - rand() % 10000;
+    real number = rand() % 500;
+    real number2 = - rand() % 500;
     real result1 = inv_dx0 * (number - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(number+A);
     real result2 =inv_dx0 * (number2 - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(number2+A);
 
@@ -839,6 +839,22 @@ real utilities::random_search_positive_values(real inv_dx0, real A, real tmp0, r
 
 }
 
+bool is_inclination_positive(real x, real inv_dx0, real A, real tmp0, real half_invr, real PhiPiTerm, real ans_fluid_term){
+
+  real delta = 0.0000001;
+  real x1 = x+delta;
+
+  real y0 = inv_dx0 * (x - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(x+A);
+  real y1 = inv_dx0 * (x1 - A) + tmp0 - half_invr - PhiPiTerm + ans_fluid_term * exp(x1+A);
+  real inclination = (y1-y0)/(x1-x);
+
+  if(inclination > 0){
+    return true;
+  }else{
+    return false;
+  }
+}
+
 real utilities::random_search_negative_values(real inv_dx0, real A, real tmp0, real half_invr, real PhiPiTerm, real ans_fluid_term ){
   //search in the interval with a 1000 numbers positive and negative.
 
@@ -847,8 +863,8 @@ real utilities::random_search_negative_values(real inv_dx0, real A, real tmp0, r
 
   for(int i=0; i < 100000000; i++){
 
-    real number = rand() % 1000;
-    real number2 = - rand() % 10000;
+    real number = rand() % 500;
+    real number2 = - rand() % 500;
     //maybe only need to not stop the program if the value is infinity.
 
     //maybe can eliminate the search for negative numbers.--> can improve speed.
@@ -860,8 +876,11 @@ real utilities::random_search_negative_values(real inv_dx0, real A, real tmp0, r
 
       //check the validity:
       if (is_valid(result1)){
+        // add here a new check, check if inclination is more than zero.
+          if (is_inclination_positive(number,inv_dx0, A, tmp0,half_invr,PhiPiTerm,ans_fluid_term)){
 
-          return number;
+            return number;
+          }
       }
     }
     
